@@ -92,7 +92,7 @@ const DashboardPage = () => {
 
    const getMockBooks = (): Book[] => [
       {
-         id: 1,
+         id: '1',
          title: 'The Great Gatsby',
          author: 'F. Scott Fitzgerald',
          isbn: '978-0743273565',
@@ -103,7 +103,7 @@ const DashboardPage = () => {
          description: 'A classic novel about the Jazz Age.',
       },
       {
-         id: 2,
+         id: '2',
          title: '1984',
          author: 'George Orwell',
          isbn: '978-0451524935',
@@ -116,7 +116,7 @@ const DashboardPage = () => {
          description: 'A dystopian novel about totalitarianism.',
       },
       {
-         id: 3,
+         id: '3',
          title: 'Brave New World',
          author: 'Aldous Huxley',
          isbn: '978-0060850524',
@@ -186,15 +186,28 @@ const DashboardPage = () => {
                showConfirmButton: false,
             });
          }
-      } catch (err) {
+      } catch (err: any) {
          console.error('Error saving book:', err);
          
+         // Verificar si es un error de validación del backend
+         if (err.response?.data?.code === 'VALIDATION_ERROR') {
+            await Swal.fire({
+               icon: 'error',
+               title: 'Validation Error',
+               text: err.response.data.message || 'Please check your input data.',
+               confirmButtonColor: '#005eb8',
+            });
+            return;
+         }
+         
+         // Si hay error de red, guardar localmente
          if ('id' in bookData && bookData.id) {
             setBooks(prev => prev.map(b => (b.id === bookData.id ? (bookData as Book) : b)));
          } else {
+            const { v4: uuidv4 } = await import('uuid');
             const newBook: Book = {
                ...bookData,
-               id: Math.max(0, ...books.map(b => b.id || 0)) + 1,
+               id: uuidv4(),
             };
             setBooks(prev => [...prev, newBook]);
          }

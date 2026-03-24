@@ -56,6 +56,15 @@ export const BookDialog = ({ open, onClose, onSave, book }: BookDialogProps) => 
       status: 'checked-in',
    });
 
+   const [errors, setErrors] = useState<{
+      title?: string;
+      author?: string;
+      isbn?: string;
+      publisher?: string;
+      publicationYear?: string;
+      description?: string;
+   }>({});
+
    useEffect(() => {
       if (book) {
          setFormData({
@@ -80,15 +89,71 @@ export const BookDialog = ({ open, onClose, onSave, book }: BookDialogProps) => 
             status: 'checked-in',
          });
       }
+      setErrors({});
    }, [book, open]);
+
+   const validateField = (field: keyof Omit<Book, 'id'>, value: any): string | undefined => {
+      switch (field) {
+         case 'title':
+            if (!value || value.trim().length === 0) return 'Title is required';
+            if (value.length > 255) return 'Title must be less than 255 characters';
+            break;
+         case 'author':
+            if (!value || value.trim().length === 0) return 'Author is required';
+            if (value.length > 255) return 'Author must be less than 255 characters';
+            break;
+         case 'isbn':
+            if (!value || value.trim().length === 0) return 'ISBN is required';
+            if (value.length < 10) return 'ISBN must be at least 10 characters long';
+            if (value.length > 17) return 'ISBN must be less than 17 characters';
+            break;
+         case 'publisher':
+            if (value && value.length > 255) return 'Publisher must be less than 255 characters';
+            break;
+         case 'publicationYear':
+            if (value) {
+               const year = Number(value);
+               if (year < 1000) return 'Year must be at least 1000';
+               if (year > currentYear) return `Year cannot be greater than ${currentYear}`;
+            }
+            break;
+         case 'description':
+            if (value && value.length > 1000) return 'Description must be less than 1000 characters';
+            break;
+      }
+      return undefined;
+   };
 
    const handleChange = (field: keyof Omit<Book, 'id'>) => (
       e: React.ChangeEvent<HTMLInputElement>
    ) => {
-      setFormData(prev => ({ ...prev, [field]: e.target.value }));
+      const value = e.target.value;
+      setFormData(prev => ({ ...prev, [field]: value }));
+      
+      // Validar el campo en tiempo real
+      const error = validateField(field, value);
+      setErrors(prev => ({ ...prev, [field]: error }));
    };
 
    const handleSubmit = () => {
+      // Validar todos los campos antes de enviar
+      const newErrors: typeof errors = {};
+      let hasErrors = false;
+
+      (Object.keys(formData) as Array<keyof Omit<Book, 'id'>>).forEach(field => {
+         const error = validateField(field, formData[field]);
+         if (error) {
+            newErrors[field as keyof typeof errors] = error;
+            hasErrors = true;
+         }
+      });
+
+      setErrors(newErrors);
+
+      if (hasErrors) {
+         return;
+      }
+
       if (book?.id) {
          onSave({ ...formData, id: book.id });
       } else {
@@ -97,7 +162,17 @@ export const BookDialog = ({ open, onClose, onSave, book }: BookDialogProps) => 
       onClose();
    };
 
-   const isFormValid = formData.title && formData.author && formData.isbn;
+   const isFormValid = 
+      formData.title && 
+      formData.author && 
+      formData.isbn && 
+      formData.isbn.length >= 10 &&
+      !errors.title &&
+      !errors.author &&
+      !errors.isbn &&
+      !errors.publisher &&
+      !errors.publicationYear &&
+      !errors.description;
 
    return (
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -114,6 +189,8 @@ export const BookDialog = ({ open, onClose, onSave, book }: BookDialogProps) => 
                         required
                         value={formData.title}
                         onChange={handleChange('title')}
+                        error={!!errors.title}
+                        helperText={errors.title}
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                      />
                   </Grid>
@@ -124,6 +201,8 @@ export const BookDialog = ({ open, onClose, onSave, book }: BookDialogProps) => 
                         required
                         value={formData.author}
                         onChange={handleChange('author')}
+                        error={!!errors.author}
+                        helperText={errors.author}
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                      />
                   </Grid>
@@ -134,6 +213,8 @@ export const BookDialog = ({ open, onClose, onSave, book }: BookDialogProps) => 
                         required
                         value={formData.isbn}
                         onChange={handleChange('isbn')}
+                        error={!!errors.isbn}
+                        helperText={errors.isbn || 'Minimum 10 characters'}
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                      />
                   </Grid>
@@ -143,6 +224,8 @@ export const BookDialog = ({ open, onClose, onSave, book }: BookDialogProps) => 
                         label="Publisher"
                         value={formData.publisher}
                         onChange={handleChange('publisher')}
+                        error={!!errors.publisher}
+                        helperText={errors.publisher}
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                      />
                   </Grid>
@@ -153,6 +236,8 @@ export const BookDialog = ({ open, onClose, onSave, book }: BookDialogProps) => 
                         type="number"
                         value={formData.publicationYear}
                         onChange={handleChange('publicationYear')}
+                        error={!!errors.publicationYear}
+                        helperText={errors.publicationYear}
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                      />
                   </Grid>
@@ -180,6 +265,8 @@ export const BookDialog = ({ open, onClose, onSave, book }: BookDialogProps) => 
                         rows={4}
                         value={formData.description}
                         onChange={handleChange('description')}
+                        error={!!errors.description}
+                        helperText={errors.description}
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                      />
                   </Grid>

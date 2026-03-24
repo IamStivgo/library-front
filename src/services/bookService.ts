@@ -12,7 +12,7 @@ export const bookService = {
       }
    },
 
-   async getBookById(id: number): Promise<Book> {
+   async getBookById(id: string): Promise<Book> {
       try {
          const response = await api.get<ApiResponse<Book>>(`/books/${id}`);
          return response.data.data;
@@ -32,7 +32,7 @@ export const bookService = {
       }
    },
 
-   async updateBook(id: number, book: Partial<Book>): Promise<Book> {
+   async updateBook(id: string, book: Partial<Book>): Promise<Book> {
       try {
          const response = await api.put<ApiResponse<Book>>(`/books/${id}`, book);
          return response.data.data;
@@ -42,7 +42,7 @@ export const bookService = {
       }
    },
 
-   async deleteBook(id: number): Promise<void> {
+   async deleteBook(id: string): Promise<void> {
       try {
          await api.delete(`/books/${id}`);
       } catch (error) {
@@ -52,7 +52,7 @@ export const bookService = {
    },
 
    async checkOutBook(
-      id: number,
+      id: string,
       borrowerInfo: { borrowerName: string; borrowerEmail: string; dueDate: string }
    ): Promise<Book> {
       try {
@@ -64,7 +64,7 @@ export const bookService = {
       }
    },
 
-   async checkInBook(id: number): Promise<Book> {
+   async checkInBook(id: string): Promise<Book> {
       try {
          const response = await api.post<ApiResponse<Book>>(`/books/${id}/checkin`);
          return response.data.data;
