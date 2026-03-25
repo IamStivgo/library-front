@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
    Box,
    Typography,
@@ -57,7 +56,7 @@ const LoanHistoryView = () => {
          case 'overdue':
             return <AlarmIcon sx={{ fontSize: 16 }} />;
          default:
-            return null;
+            return <AutoStoriesIcon sx={{ fontSize: 16 }} />;
       }
    };
 

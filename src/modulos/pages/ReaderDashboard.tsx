@@ -127,6 +127,16 @@ const ReaderDashboard = () => {
    };
 
    const handleRenewBorrow = async (book: Book) => {
+      if (!book.id) {
+         await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Invalid book ID',
+            confirmButtonColor: '#005eb8',
+         });
+         return;
+      }
+
       const { value: newDueDate } = await Swal.fire({
          title: 'Renew Borrow',
          html: `
@@ -177,6 +187,16 @@ const ReaderDashboard = () => {
    };
 
    const handleMarkFinished = async (book: Book) => {
+      if (!book.id) {
+         await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Invalid book ID',
+            confirmButtonColor: '#005eb8',
+         });
+         return;
+      }
+
       const result = await Swal.fire({
          title: 'Mark as Finished?',
          html: `Are you sure you want to return <strong>"${book.title}"</strong>?`,

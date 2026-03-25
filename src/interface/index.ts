@@ -7,6 +7,7 @@ export interface Book {
    publicationYear?: number;
    genre?: string;
    description?: string;
+   coverImage?: string;
    status: 'checked-in' | 'checked-out';
    borrowerName?: string;
    borrowerEmail?: string;
