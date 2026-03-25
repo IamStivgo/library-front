@@ -36,3 +36,21 @@ export interface ApiResponse<T> {
    message?: string;
    success: boolean;
 }
+
+export interface LoanHistory {
+   id: string;
+   bookId: string;
+   bookTitle: string;
+   bookAuthor?: string;
+   bookIsbn?: string;
+   borrowerName: string;
+   borrowerEmail: string;
+   checkoutDate: string;
+   dueDate: string;
+   returnDate?: string;
+   status: 'active' | 'returned' | 'overdue';
+   renewedCount: number;
+   notes?: string;
+   createdAt: string;
+   updatedAt: string;
+}

@@ -291,7 +291,15 @@ export const BookDialog = ({ open, onClose, onSave, book }: BookDialogProps) => 
                sx={{
                   borderRadius: '9999px',
                   px: 4,
+                  color: 'white',
                   background: 'linear-gradient(135deg, #00478d 0%, #005eb8 100%)',
+                  '&:hover': {
+                     background: 'linear-gradient(135deg, #003d7a 0%, #004c9e 100%)',
+                  },
+                  '&.Mui-disabled': {
+                     background: '#e0e3e5',
+                     color: 'rgba(0, 0, 0, 0.26)',
+                  },
                }}
             >
                {book ? 'Save Changes' : 'Add Book'}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
    Dialog,
    DialogTitle,
@@ -20,29 +20,37 @@ interface CheckOutDialogProps {
       dueDate: string;
    }) => void;
    bookTitle: string;
+   borrowerName: string;
+   borrowerEmail: string;
 }
 
-export const CheckOutDialog = ({ open, onClose, onCheckOut, bookTitle }: CheckOutDialogProps) => {
-   const [formData, setFormData] = useState({
-      borrowerName: '',
-      borrowerEmail: '',
-      dueDate: '',
-   });
+export const CheckOutDialog = ({ 
+   open, 
+   onClose, 
+   onCheckOut, 
+   bookTitle, 
+   borrowerName, 
+   borrowerEmail 
+}: CheckOutDialogProps) => {
+   const [dueDate, setDueDate] = useState('');
 
-   const handleChange = (field: keyof typeof formData) => (
-      e: React.ChangeEvent<HTMLInputElement>
-   ) => {
-      setFormData(prev => ({ ...prev, [field]: e.target.value }));
-   };
+   useEffect(() => {
+      if (!open) {
+         setDueDate('');
+      }
+   }, [open]);
 
    const handleSubmit = () => {
-      onCheckOut(formData);
-      setFormData({ borrowerName: '', borrowerEmail: '', dueDate: '' });
+      onCheckOut({
+         borrowerName,
+         borrowerEmail,
+         dueDate,
+      });
+      setDueDate('');
       onClose();
    };
 
-   const isFormValid =
-      formData.borrowerName && formData.borrowerEmail && formData.dueDate;
+   const isFormValid = dueDate !== '';
 
    const minDate = new Date().toISOString().split('T')[0];
 
@@ -52,38 +60,30 @@ export const CheckOutDialog = ({ open, onClose, onCheckOut, bookTitle }: CheckOu
          <DialogContent>
             <Box sx={{ pt: 2 }}>
                <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary' }}>
-                  <strong>{bookTitle}</strong>
+                  You are requesting: <strong>{bookTitle}</strong>
                </Typography>
+               
+               <Box sx={{ mb: 3, p: 2, bgcolor: '#f7fafc', borderRadius: '12px' }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
+                     Borrower Information:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                     {borrowerName}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                     {borrowerEmail}
+                  </Typography>
+               </Box>
+
                <Grid container spacing={3}>
-                  <Grid item xs={12}>
-                     <TextField
-                        fullWidth
-                        label="Borrower's Name"
-                        required
-                        value={formData.borrowerName}
-                        onChange={handleChange('borrowerName')}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-                     />
-                  </Grid>
-                  <Grid item xs={12}>
-                     <TextField
-                        fullWidth
-                        label="Borrower's Email"
-                        type="email"
-                        required
-                        value={formData.borrowerEmail}
-                        onChange={handleChange('borrowerEmail')}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-                     />
-                  </Grid>
                   <Grid item xs={12}>
                      <TextField
                         fullWidth
                         label="Due Date"
                         type="date"
                         required
-                        value={formData.dueDate}
-                        onChange={handleChange('dueDate')}
+                        value={dueDate}
+                        onChange={(e) => setDueDate(e.target.value)}
                         InputLabelProps={{
                            shrink: true,
                         }}
@@ -91,6 +91,7 @@ export const CheckOutDialog = ({ open, onClose, onCheckOut, bookTitle }: CheckOu
                            min: minDate,
                         }}
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                        helperText="Select when you plan to return the book"
                      />
                   </Grid>
                </Grid>
@@ -114,7 +115,15 @@ export const CheckOutDialog = ({ open, onClose, onCheckOut, bookTitle }: CheckOu
                sx={{
                   borderRadius: '9999px',
                   px: 4,
+                  color: 'white',
                   background: 'linear-gradient(135deg, #00478d 0%, #005eb8 100%)',
+                  '&:hover': {
+                     background: 'linear-gradient(135deg, #003d7a 0%, #004c9e 100%)',
+                  },
+                  '&.Mui-disabled': {
+                     background: '#e0e3e5',
+                     color: 'rgba(0, 0, 0, 0.26)',
+                  },
                }}
             >
                Check Out Book
