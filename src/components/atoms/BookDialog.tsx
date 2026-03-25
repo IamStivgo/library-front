@@ -130,13 +130,13 @@ export const BookDialog = ({ open, onClose, onSave, book }: BookDialogProps) => 
       const value = e.target.value;
       setFormData(prev => ({ ...prev, [field]: value }));
       
-      // Validar el campo en tiempo real
+      // Validate field in real-time
       const error = validateField(field, value);
       setErrors(prev => ({ ...prev, [field]: error }));
    };
 
    const handleSubmit = () => {
-      // Validar todos los campos antes de enviar
+      // Validate all fields before submitting
       const newErrors: typeof errors = {};
       let hasErrors = false;
 
