@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import {
    Box,
    TextField,
@@ -13,6 +14,8 @@ import {
    InputAdornment,
    IconButton,
    Grid,
+   Divider,
+   Alert,
 } from '@mui/material';
 import {
    MenuBook as MenuBookIcon,
@@ -23,28 +26,85 @@ import {
    VisibilityOff,
 } from '@mui/icons-material';
 import { useAuth } from '../../context';
+import Swal from 'sweetalert2';
 
 const LoginPage = () => {
    const navigate = useNavigate();
-   const { login } = useAuth();
+   const { login, loginWithGoogle, user } = useAuth();
    const [showPassword, setShowPassword] = useState(false);
+   const [error, setError] = useState('');
+   const [loading, setLoading] = useState(false);
    const [formData, setFormData] = useState({
       identifier: '',
       password: '',
       rememberMe: false,
    });
 
-   const handleSubmit = (e: React.FormEvent) => {
+   // Si ya está autenticado, redirigir al dashboard
+   useEffect(() => {
+      if (user) {
+         console.log('[LoginPage] User already authenticated, redirecting to dashboard...');
+         navigate('/dashboard');
+      }
+   }, [user, navigate]);
+
+   const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-      
-      login({
-         id: 1,
-         name: 'Curator',
-         email: formData.identifier,
-         username: formData.identifier,
-      });
-      
-      navigate('/dashboard');
+      setError('');
+      setLoading(true);
+
+      try {
+         await login(formData.identifier, formData.password);
+         
+         await Swal.fire({
+            icon: 'success',
+            title: 'Successful Login',
+            text: 'Welcome back',
+            timer: 1500,
+            showConfirmButton: false,
+         });
+
+         navigate('/dashboard');
+      } catch (err: any) {
+         setError(err.response?.data?.message || 'Login error');
+         
+         await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: err.response?.data?.message || 'Login error',
+         });
+      } finally {
+         setLoading(false);
+      }
+   };
+
+   const handleGoogleSuccess = async (credentialResponse: any) => {
+      setError('');
+      setLoading(true);
+
+      try {
+         await loginWithGoogle(credentialResponse.credential);
+         
+         await Swal.fire({
+            icon: 'success',
+            title: 'Successful Login',
+            text: 'Welcome',
+            timer: 1500,
+            showConfirmButton: false,
+         });
+
+         navigate('/dashboard');
+      } catch (err: any) {
+         setError(err.response?.data?.message || 'Google login error');
+         
+         await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: err.response?.data?.message || 'Google login error',
+         });
+      } finally {
+         setLoading(false);
+      }
    };
 
    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -264,6 +324,35 @@ const LoginPage = () => {
                            </Typography>
                         </Box>
 
+                        {error && (
+                           <Alert severity="error" sx={{ mb: 3 }}>
+                              {error}
+                           </Alert>
+                        )}
+
+                        <Box sx={{ mb: 3 }}>
+                           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                              <GoogleLogin
+                                 onSuccess={handleGoogleSuccess}
+                                 onError={() => {
+                                    setError('Google login error');
+                                 }}
+                                 useOneTap
+                                 theme="filled_blue"
+                                 size="large"
+                                 text="signin_with"
+                                 shape="rectangular"
+                                 width="350"
+                              />
+                           </Box>
+                        </Box>
+
+                        <Divider sx={{ my: 3 }}>
+                           <Typography variant="body2" color="text.secondary">
+                              Or continue with email
+                           </Typography>
+                        </Divider>
+
                         <form onSubmit={handleSubmit}>
                            <Box sx={{ mb: 3 }}>
                               <Typography
@@ -278,6 +367,7 @@ const LoginPage = () => {
                                  placeholder="curator@luminaledger.com"
                                  value={formData.identifier}
                                  onChange={handleChange}
+                                 disabled={loading}
                                  InputProps={{
                                     startAdornment: (
                                        <InputAdornment position="start">
@@ -317,6 +407,7 @@ const LoginPage = () => {
                                  placeholder="••••••••••••"
                                  value={formData.password}
                                  onChange={handleChange}
+                                 disabled={loading}
                                  InputProps={{
                                     startAdornment: (
                                        <InputAdornment position="start">
@@ -349,6 +440,7 @@ const LoginPage = () => {
                                        name="rememberMe"
                                        checked={formData.rememberMe}
                                        onChange={handleChange}
+                                       disabled={loading}
                                     />
                                  }
                                  label="Remember me for 30 days"
@@ -360,6 +452,7 @@ const LoginPage = () => {
                               fullWidth
                               variant="contained"
                               size="large"
+                              disabled={loading}
                               endIcon={<ArrowForwardIcon />}
                               sx={{
                                  py: 1.5,
@@ -374,7 +467,7 @@ const LoginPage = () => {
                                  },
                               }}
                            >
-                              Sign In to Dashboard
+                              {loading ? 'Signing in...' : 'Sign In to Dashboard'}
                            </Button>
                         </form>
 

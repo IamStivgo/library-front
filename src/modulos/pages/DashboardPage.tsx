@@ -46,6 +46,8 @@ import {
    Edit as EditIcon,
    Delete as DeleteIcon,
    AutoStories as AutoStoriesIcon,
+   SmartToy as AIIcon,
+   AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material';
 import Swal from 'sweetalert2';
 import { useAuth } from '../../context';
@@ -189,7 +191,7 @@ const DashboardPage = () => {
       } catch (err: any) {
          console.error('Error saving book:', err);
          
-         // Verificar si es un error de validación del backend
+         // Check if it's a backend validation error
          if (err.response?.data?.code === 'VALIDATION_ERROR') {
             await Swal.fire({
                icon: 'error',
@@ -200,7 +202,7 @@ const DashboardPage = () => {
             return;
          }
          
-         // Si hay error de red, guardar localmente
+         // If there's a network error, save locally
          if ('id' in bookData && bookData.id) {
             setBooks(prev => prev.map(b => (b.id === bookData.id ? (bookData as Book) : b)));
          } else {
@@ -393,6 +395,30 @@ const DashboardPage = () => {
                      <MenuBookIcon />
                   </ListItemIcon>
                   <ListItemText primary="Bookshelf" />
+               </ListItemButton>
+            </ListItem>
+
+            <ListItem disablePadding>
+               <ListItemButton 
+                  sx={{ borderRadius: '12px', mx: 1 }}
+                  onClick={() => navigate('/ai')}
+               >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                     <AIIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="AI Assistant" />
+               </ListItemButton>
+            </ListItem>
+
+            <ListItem disablePadding>
+               <ListItemButton 
+                  sx={{ borderRadius: '12px', mx: 1 }}
+                  onClick={() => navigate('/admin')}
+               >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                     <AdminIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Admin Panel" />
                </ListItemButton>
             </ListItem>
 
