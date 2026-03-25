@@ -74,6 +74,16 @@ export const bookService = {
       }
    },
 
+   async renewBook(id: string, dueDate: string): Promise<Book> {
+      try {
+         const response = await api.post<ApiResponse<Book>>(`/books/${id}/renew`, { dueDate });
+         return response.data.data;
+      } catch (error) {
+         console.error('Error renewing book:', error);
+         throw error;
+      }
+   },
+
    async searchBooks(query: string): Promise<Book[]> {
       try {
          const response = await api.get<ApiResponse<Book[]>>('/books/search', {
